@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+		<script>
+
+            // 토큰을 확인해서 로그인이 안되어있으면 돌려보낸다.
+            function getSelf(callback) {
+  $.ajax({
+    type: "GET",
+    url: "/main/users/me",
+    headers: {
+      authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    success: function (response) {
+      callback(response.user);
+    },
+    error: function (xhr, status, error) {
+      if (status == 401) {
+        alert("로그인이 필요합니다.");
+      } else {
+        localStorage.clear();
+        alert("알 수 없는 문제가 발생했습니다. 관리자에게 문의하세요.");
+      }
+      window.location.href = "/main";
+    },
+  });
+}
+
+//로그인 되어있는데 로그인페이지로 오면?
+if (localStorage.getItem("token")) {
+        getSelf(function () {
+          alert("이미 로그인이 되어있습니다.");
+          window.location.replace("/main");
+        });
+      }
+
+        //로그인 함수
+        function sign_in() {
+        let email = $("#inputEmail").val();
+        let password = $("#inputPassword").val();
+        $.ajax({
+          type: "POST",
+          url: "/main/auth",
+          data: {
+            email: email,
+            password: password,
+          },
+          success: function (response) {
+            localStorage.setItem("token", response.token);
+            window.location.replace("/main");
+          },
+          error: function (error) {
+            alert(error.responseJSON.errorMessage);
+          },
+        });
+      }
+		</script>
+		</head>
+		<body>
+
+<section class="hero is-primary">
+  <button class="button is-info is-light" style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="location.href = '/main'">돌아가기</button>
+	<div class="hero-body">
+	  <p class="title">
+		로그인
+	  </p>
+	</div>
+  </section>
+  <section class="section">
+    <div class="container">
+        <div class="box" style="max-width: 480px;margin:auto">
+            <article class="media">
+                <div class="media-content">
+                    <div class="content">
+                        <div class="field has-addons">
+                            <div class="control has-icons-left" style="width:100%">
+                                <input id="inputEmail"  class="input" type="text" placeholder="아이디">
+                                <span class="icon is-small is-left"><i class="fa fa-user"></i></span>
+                            </div>
+
+                        </div>
+
+                        <div class="field">
+                            <div class="control has-icons-left">
+                                <input  onkeyup="enterkey();" id="inputpassword" class="input" type="password" placeholder="비밀번호">
+                                <span class="icon is-small is-left"><i class="fa fa-lock"></i></span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div id="div-sign-in-or-up" class="has-text-centered">
+                        <nav class="level is-mobile">
+                            <button class="level-item button is-sparta" onclick="sign_in()">
+                                로그인
+                            </button>
+                        </nav>
+                        <hr>
+                        <h4 class="mb-3">아직 회원이 아니라면</h4>
+                        <nav class="level is-mobile">
+
+                            <button class="level-item button is-sparta is-outlined"
+                            onclick="location.href = '/main/register'">
+                                회원가입하기
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+</body>
+</html>
+
+

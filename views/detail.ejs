@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        let myname ;
+        //겟셀프
+        function getSelf(callback) {
+            $.ajax({
+                type: "GET",
+                url: "/main/users/me",
+                headers: {
+                    authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                success: function (response) {
+                    callback(response.user);
+                    if (response.user.nickname !== '<%= detail.authorName %>') {
+                         $("#modifybtn").addClass("is-hidden"); 
+                          }
+                        myname=response.user.nickname
+                    
+                }, 
+            });
+        }
+                    
+        //댓글작성 완성본
+        function WriteComment() {
+            if (!localStorage.getItem("token")) {
+                alert('로그인 후 이용해 주세요!')
+                window.location.replace("/main/login");
+                return;
+            }
+            let comment = $("#writecomments").val();
+            const queryString = window.location['href'];
+            const postSeq = (queryString.toString().split('/'))[5].split('?')[0];
+            
+
+            $.ajax({
+                type: "POST",
+                async: true,
+                headers: {
+                    authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                url: "/main/comment/write/",
+                data: {
+                    comment: comment,
+                    postSeq: postSeq
+                },
+                success: function (response) { alert('작성완료!'); window.location.reload(); },
+                error: function (error) {
+                    alert(error.responseJSON.errorMessage);
+                },
+            });
+
+        }
+        //댓글수정
+        function editing_comment(comment_id) {
+            let comment = $("#modifycomment" + comment_id).val();
+            $.ajax({
+                type: "patch",
+                url: "/main/detail/:_id",
+                data: {
+                    comment: comment,
+                    _id: comment_id,
+                },
+                error: function (error) {
+                    alert(error.responseJSON.errorMessage);
+                },
+                success: function () { alert('수정완료!'); window.location.reload(); }
+            });
+        }
+
+        //댓글 삭제
+        function kill_comment(comment_id) {
+            const confirmkill = confirm('정말 삭제합니까?')
+            if (confirmkill) {
+                $.ajax({
+                    type: "delete",
+                    url: "/main/detail/:_id",
+                    data: {
+                        _id: comment_id
+                    },
+                    error: function (request, xhr, status) {
+                        alert(JSON.parse(request.responseText)["msg"]);
+                    },
+                    success: function () { alert('삭제완료!'); window.location.reload(); }
+                })
+            };
+            return;
+        }
+        //로그아웃
+        function sign_out() {
+            alert('로그아웃 되었습니다!')
+            localStorage.clear();
+            window.location.href = "/main";
+        }
+        //로그인 로그아웃 버튼 토글
+        if (localStorage.getItem("token")) {
+            getSelf(function () {
+                $("#loginbtn").addClass("is-hidden");
+                $("#logoutbtn").removeClass("is-hidden");
+                $("#modifybtn").removeClass("is-hidden");
+            });
+        }
+        if (!localStorage.getItem("token")) {
+            getSelf(function () {
+                $("#loginbtn").removeClass("is-hidden");
+                $("#logoutbtn").addClass("is-hidden");
+            });
+        }
+        //수정 버튼 토글
+        function modifytoggle(comment_id) {
+            $("#modifyarea" + comment_id).toggleClass("is-hidden")
+            $("#commentArea" + comment_id).toggleClass("is-hidden")
+        }
+    </script>
+</head>
+
+<body>
+    <section class="hero is-info">
+        <button class="button is-warning" id="loginbtn" style="max-width: 100px; margin: auto; margin-right: 100px;"
+            onclick="location.href = '/main/login'">로그인</button>
+        <button class="button is-danger is-hidden" id="logoutbtn"
+            style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="sign_out()">로그아웃</button>
+        <div class="hero-body">
+            <p class="title">
+                상세페이지
+            </p>
+        </div>
+    </section>
+    <section class="section" style="max-width: 1700px; margin:auto;">
+        <div class="buttons" style="border: 1px solid transparent;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        border-radius: .25rem; float: right; margin-right: 100px; ">
+          <button class="button is-link is-outlined" onclick="location.href = '/main'">글 목록으로</button>
+      </div>
+        <h1 class="title">
+            <%= detail.title %>
+        </h1>
+        
+    </section>
+
+    <div class="box" style="max-width: 1700px; margin: auto;">
+        <article class="media">
+            <div class="media-left">
+                <figure class="image is-64x64">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe7DzAfa4VXiqANBq9Ao0Cgfm_79NeM6Ibajw5tQNidCKbAZX6H61-nAhoOSYC7EIsV3M&usqp=CAU"
+                        alt="Image">
+                </figure>
+            </div>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>
+                            <%= detail.authorName %>
+                        </strong> <small>
+                            <%= detail.seq %> 번째 작성자
+                        </small>
+
+                        <br>
+                        <%= detail.content %>
+                    </p>
+                    <small style="margin-left: 10px;">
+                        <%= detail.createdAt.toLocaleString() %>
+                    </small>
+
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item" aria-label="reply">
+                            <span class="icon is-small">
+                                <i class="fas fa-reply" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                        <a class="level-item" aria-label="retweet">
+                            <span class="icon is-small">
+                                <i class="fas fa-retweet" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                        <a class="level-item" aria-label="like">
+                            <span class="icon is-small">
+                                <i class="fas fa-heart" aria-hidden="true"></i>
+                            </span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <div class="buttons" style="border: 1px solid transparent;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  border-radius: .25rem; float: right; margin: auto; margin-right: 20px; margin-bottom: 10px;">
+                <button class="button is-info is-hidden" id='modifybtn'
+                    onclick="location.href = '/main/modify/<%= detail.seq %>'">수정/삭제</button>
+            </div>
+        </article>
+    </div>
+    <hr>
+    <input class="input is-link" id="writecomments" type="text" placeholder="댓글을 입력하세요!" style="max-width: 700px; margin: auto; padding-top: 20px; left:30%">
+            <div><button class="button is-link" style="width: 100px; left:30%; margin-top:10px;" onclick="WriteComment()">작성완료</button></div>
+    <% for (let i=0; i<comments.length; i++) { %>
+        <article class="media" style="max-width: 1000px; margin: auto; padding-top: 20px;">
+            <figure class="media-left">
+                <p class="image is-64x64">
+                    <img
+                        src="https://media.vlpt.us/images/jaythomas/post/0ebf7f6d-1642-439d-8d3f-597f50ea0bb6/%E1%84%82%E1%85%A3%E1%86%BC1.jpeg">
+                </p>
+            </figure>
+            <div class="media-content">
+                <div class="content" id="commentArea<%= comments[i]._id %>">
+                    <p>
+                        <strong>
+                            <%= comments[i].commenter %>
+                        </strong> <small>
+                            <%= comments[i].createdAt.toLocaleString() %>
+                        </small>
+                        <br>
+                        <%= comments[i].comment %>
+                            <input class="is-hidden" id="commentID" value="<%= comments[i]._id %>">
+                    </p>
+                </div>
+                <nav class="level is-mobile">
+                    <div class="level-left">
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-reply"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-retweet"></i></span>
+                        </a>
+                        <a class="level-item">
+                            <span class="icon is-small"><i class="fas fa-heart"></i></span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <div class="media-right">
+                <div class="buttons" style="border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    border-radius: .25rem; float: right; margin-right: 10px;">
+                    <% if( nickname == comments[i].commenter){ %>
+                        <button id="btn_modifycomment<%= comments[i]._id %>" class="button is-warning "
+                        onclick="modifytoggle('<%= comments[i]._id %>')" style="margin: auto;">수정</button>
+                        <button
+                        id="btn_deletecomment<%= comments[i]._id %>" class="button is-danger "
+                        onclick="kill_comment('<%= comments[i]._id %>')"
+                        style="margin: auto; margin-left: 10px">삭제</button>
+                    <% } %>
+                </div>
+            </div>
+        </article>
+        <div id="modifyarea<%= comments[i]._id %>" class="is-hidden">
+            <textarea id="modifycomment<%= comments[i]._id %>" name="modifycomment"
+                style="width:700px; margin-left: 550px; margin-right: 30px; padding-top: 20px;"><%= comments[i].comment %></textarea>
+            <button class="button is-warning" onclick="editing_comment('<%= comments[i]._id %>')">수정완료</button>
+        </div>
+        <% } %>
+            
+            <div id="postSeq" name="postSeq" class="is-hidden" value="<%= detail.seq %>">
+                <%= detail.seq %>
+            </div>
+            
+</body>
+
+</html>

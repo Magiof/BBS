@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        //겟셀프
+        $(document).ready(function getSelf(callback) {
+            $.ajax({
+                type: "GET",
+                url: "/main/users/me",
+                headers: {
+                    authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                success: function (response) {
+                    callback(response.user);
+                    if (response.user.nickname !== '<%= modify.authorName %>') {
+                        alert("본인이 작성한 글만 수정/삭제가 가능합니다");
+                        window.location.replace("/main");
+                        return;
+                    }
+                },
+                error: function (xhr, status, error) {
+					if (status === 401) {
+						alert("로그인이 필요합니다.");
+					} else {
+						localStorage.clear();
+						alert("로그인이 필요합니다!");
+					}
+					window.location.href = "/main/login";
+				},
+            });
+        });
+        //비로그인 상태에서 접근
+        if (!localStorage.getItem("token")) {
+            getSelf(function () {
+                window.location.replace("/main");
+            });
+        }
+
+
+        //글 수정
+        function editing() {
+            let title = $("#title").val();
+            let content = $("#content").val();
+            let seq = $("#seq").val();
+            $.ajax({
+                type: "patch",
+                url: "/main/modify/" + seq,
+                data: {
+                    title: title,
+                    content: content,
+                    seq:seq,
+                },
+                error: function (request, xhr, status) {
+                    alert(JSON.parse(request.responseText)["msg"]);
+                },
+                success: function () { alert('수정완료!'); window.location.href = '/main'; }
+            });
+        }
+        //글 삭제
+        function kill() {
+            let seq = $("#seq").val();
+            $.ajax({
+                type: "delete",
+                url: "/main/modify/" + seq,
+                data: {
+                    seq:seq,
+                },
+                error: function (request, xhr, status) {
+                    alert(JSON.parse(request.responseText)["msg"]);
+                },
+                success: function () { alert('삭제완료!'); window.location.href = '/main'; }
+            })
+        }
+    </script>
+</head>
+
+<body>
+    <section class="hero is-link">
+        <div class="hero-body">
+            <p class="title">
+                수정/삭제하기
+            </p>
+            <p style="color:white">
+            </p>
+        </div>
+    </section>
+    <form class="box" style="max-width: 1200px; min-height: 500px; margin: auto; margin-top: 30px;">
+        <div class="field" style="padding: 30px; padding-bottom: 0px;">
+            <label class="label" style="font-size: 20px">제목</label>
+            <div class="control">
+                <input class="input" name="title" id="title" value="<%= modify.title %>">
+            </div>
+        </div>
+        <div class="field" style="padding:30px; padding-top: 20px;">
+            <label class="label" style="font-size: 20px;">내용</label>
+            <div class="control">
+                <input class="input" style="min-height: 300px;" name="content" id="content"
+                    value="<%= modify.content %>">
+            </div>
+        </div>
+
+
+
+
+    </form>
+    <div class="buttons" style="border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    border-radius: .25rem; float: right; margin-right: 100px;">
+        <button class="button is-link" onclick="editing()" style="margin: auto;">수정완료</button><button
+            class="button is-danger" onclick="kill()" style="margin: auto; margin-left: 10px">삭제하기</button>
+            <input type="hidden" name="seq" id="seq" type="number" value="<%=modify.seq%>">
+    </div>
+</body>
+
+</html>

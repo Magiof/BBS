@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script>
+            //회원가입
+            function sign_up() {
+        const nickname = $("#inputNickname").val();
+        const email = $("#inputEmail").val();
+        const password1 = $("#inputPassword1").val();
+        const password2 = $("#inputPassword2").val();
+
+        $.ajax({
+          type: "POST",
+          url: "/main/register",
+          data: {
+            nickname: nickname,
+            email: email,
+            password: password1,
+            confirmPassword: password2,
+          },
+          success: function (response) {
+            alert("회원가입을 축하드립니다!");
+              window.location.replace("/main");
+          },
+          error: function (error) {
+            alert(error.responseJSON.errorMessage);
+          },
+        });
+      }
+		</script>
+		</head>
+		<body>
+
+<section class="hero is-warning">
+    <button class="button is-info is-light" style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="location.href = '/main/login'">돌아가기</button>
+	<div class="hero-body">
+	  <p class="title">
+		회원가입
+	  </p>
+	</div>
+  </section>
+  <section class="section">
+    <div class="container">
+        <div class="box" style="max-width: 480px;margin:auto">
+            <article class="media">
+                <div class="media-content">
+                    <div class="content">
+                        <div class="field has-addons">
+                            <div class="control has-icons-left" style="width:100%">
+                                <input id="inputEmail" class="input" type="text" placeholder="아이디">
+                                <span class="icon is-small is-left"><i class="fa fa-user"></i></span>
+                            </div>
+                            <div class="control has-icons-left" style="width:100%">
+                                <input id="inputNickname" class="input" type="text" placeholder="닉네임">
+                                <span class="icon is-small is-left"><i class="fa fa-user"></i></span>
+                            </div>
+                            
+
+                        </div>
+                        <p class="help" >　※ 아이디와 닉네임은 영문,숫자로 이루어진 3~20자 </p>
+                        <div class="field">
+                            <div class="control has-icons-left">
+                                <input  id="inputPassword1" class="input" type="password" placeholder="비밀번호">
+                                <p class="help" >　※ 4~20자 영문,숫자 필수, 특수기호 사용 가능 </p>
+                                <span class="icon is-small is-left"><i class="fa fa-lock"></i></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control has-icons-left">
+                                <input  onkeyup="enterkey();" id="inputPassword2" class="input" type="password" placeholder="비밀번호 확인">
+                                <span class="icon is-small is-left"><i class="fa fa-lock"></i></span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div id="div-sign-in-or-up" class="has-text-centered">
+                        <nav class="level is-mobile">
+                            <button class="level-item button is-sparta" onclick="sign_up()">
+                                회원가입 !
+                            </button>
+                        </nav>
+                        <nav class="level is-mobile">
+                        </nav>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+</body>
+</html>
+
+

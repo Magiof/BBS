@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script>
+
+let login_user;
+function getSelf(callback) {
+
+  $.ajax({
+    type: "GET",
+    url: "/main/users/me",
+    headers: {
+      authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    success: function (response) {
+      callback(response.user);
+    },
+    // error: function (xhr, status, error) {
+    //   if (status == 401) {
+    //     alert("로그인이 필요합니다.");
+    //   } else {
+    //     localStorage.clear();
+    //     alert("알 수 없는 문제가 발생했습니다. 관리자에게 문의하세요.");
+    //   }
+    //   window.location.href = "/main";
+    // },
+  });
+}
+
+      $(document).ready(function () {
+          getSelf(function(user){
+            login_user=user.nickname;
+          })
+      });
+      //겟셀프
+
+      //로그아웃
+function sign_out() {
+  alert('로그아웃 되었습니다!')
+  localStorage.clear();
+  window.location.href = "/main";
+}
+
+
+//로그인,로그아웃 버튼 토글
+  if(localStorage.getItem("token")){
+    getSelf(function () {
+            $("#loginbtn").addClass("is-hidden");
+            $("#logoutbtn").removeClass("is-hidden");
+            $("#writebtn").removeClass("is-hidden");
+            $("#recommend").addClass("is-hidden");
+          });
+        }
+  if(!localStorage.getItem("token")){
+    getSelf(function () {
+            $("#loginbtn").removeClass("is-hidden");
+            $("#logoutbtn").addClass("is-hidden");
+            $("#writebtn").addClass("is-hidden");
+            $("#recommend").removeClass("is-hidden");
+          });
+        }
+
+
+		</script>
+		</head>
+		<body>
+
+<section class="hero is-primary">
+  <button class="button is-warning" id="loginbtn" style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="location.href = '/main/login'">로그인</button>
+  <button class="button is-danger is-hidden" id="logoutbtn" style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="sign_out()">로그아웃</button>
+	<div class="hero-body">
+	  <p class="title">
+		게시판
+	  </p>
+    <p class="subtitle" id="recommend" style="font:bold;">
+      글을 작성하려면 로그인 해보세요!
+    </p>
+	</div>
+  
+  </section>
+  
+
+	<table class="table table-hover" style="height: 200px; width: 1500px; margin: auto;">
+	  <thead class="table-light">
+		<tr>
+		  <td style="width: 10%">번호</td>
+		  <td style="width: 60%">제목</td>
+		  <td style="width: 15%">작성자</td>
+		  <td style="width: 15%">작성일</td>
+		</tr>
+	  </thead>
+	  <tbody id="post-box">
+        <% for (let i=0; i<posts.length; i++) { %> 
+            <tr>
+            <td> 
+              <%= posts[i].seq %>
+            </td>
+            <td onclick="location.href = '/main/detail/<%= posts[i].seq %>?nickname='+login_user"> 
+                <%= posts[i].title %>
+            </td>
+            <td>
+                <%= posts[i].authorName %>
+            </td>
+            <td>
+                <%= posts[i].createdAt.toLocaleString() %>
+            </td>
+            </tr>
+            <% } %>
+	  </tbody>
+	</table>
+  </div>
+  <div class="buttons" style="border: 1px solid transparent;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  border-radius: .25rem; float: right; margin-right: 100px;">
+    <button class="button is-primary is-hidden" id="writebtn" onclick="location.href = '/main/write'">글 작성하기</button>
+</div>
+</body>
+</html>
+
+
