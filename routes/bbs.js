@@ -74,12 +74,13 @@ router.post("/register", async (req,res)=>{
 });
 //로그인페이지 렌더
 router.get('/login',function(req,res){
-    res.render('login');
+  const {prenum} = req.query;
+    res.render('login',{prenum});
   });
 //사용자인증
 router.post("/auth", async (req, res)=>{
   const {email, password } = req.body;
-
+  
   const user = await User.findOne({email, password}).exec();
 
   if(!user){

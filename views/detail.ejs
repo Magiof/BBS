@@ -127,7 +127,7 @@
 <body>
     <section class="hero is-info">
         <button class="button is-warning" id="loginbtn" style="max-width: 100px; margin: auto; margin-right: 100px;"
-            onclick="location.href = '/main/login'">로그인</button>
+            onclick="location.href = '/main/login?prenum=<%= detail.seq %>'">로그인</button>
         <button class="button is-danger is-hidden" id="logoutbtn"
             style="max-width: 100px; margin: auto; margin-right: 100px;" onclick="sign_out()">로그아웃</button>
         <div class="hero-body">

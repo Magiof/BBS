@@ -12,7 +12,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     
 		<script>
-
+let login_user;
             // 토큰을 확인해서 로그인이 안되어있으면 돌려보낸다.
             function getSelf(callback) {
   $.ajax({
@@ -48,15 +48,25 @@ if (localStorage.getItem("token")) {
         function sign_in() {
         let email = $("#inputEmail").val();
         let password = $("#inputPassword").val();
+        const queryString = window.location['href'];
+        const prenum=(queryString.toString().split('='))[1];
         $.ajax({
           type: "POST",
           url: "/main/auth",
           data: {
             email: email,
             password: password,
+            prenum
           },
-          success: function (response) {
+          success: function (response) { 
             localStorage.setItem("token", response.token);
+            if(prenum!=undefined){
+          getSelf(function(user){
+            login_user=user.nickname; console.log(login_user)
+            window.location.replace("/main/detail/"+prenum+"?nickname="+login_user);
+              return;
+          })
+            }
             window.location.replace("/main");
           },
           error: function (error) {
@@ -64,6 +74,7 @@ if (localStorage.getItem("token")) {
           },
         });
       }
+      
 		</script>
 		</head>
 		<body>
